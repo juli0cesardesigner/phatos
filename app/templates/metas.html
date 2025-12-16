@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h1>Metas e Desejos</h1>
+
+    <a href="{{ url_for('goals.add_goal') }}" class="btn btn-primary">Adicionar Nova Meta</a>
+
+</div>
+
+
+
+<ul class="nav nav-tabs mb-4">
+
+    <li class="nav-item">
+
+        <a class="nav-link {% if current_status == 'Ativa' %}active{% endif %}" href="{{ url_for('goals.index', status='Ativa') }}">Ativas</a>
+
+    </li>
+
+    <li class="nav-item">
+
+        <a class="nav-link {% if current_status == 'Concluída' %}active{% endif %}" href="{{ url_for('goals.index', status='Concluída') }}">Concluídas</a>
+
+    </li>
+
+    <li class="nav-item">
+
+        <a class="nav-link {% if current_status == 'Cancelada' %}active{% endif %}" href="{{ url_for('goals.index', status='Cancelada') }}">Canceladas</a>
+
+    </li>
+
+</ul>
+
+
+
+{% if not goals_data %}
+
+<div class="text-center p-5 border rounded">
+
+    <h4>Nenhuma meta com status '{{ current_status }}' foi encontrada.</h4>
+
+</div>
+
+{% else %}
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+    {% for data in goals_data %}
+
+    <div class="col">
+
+        <div class="card h-100">
+
+            <div class="card-body">
+
+                <div class="d-flex justify-content-between">
+
+                    <h5 class="card-title">{{ data.goal.name }}</h5>
+
+                    <div class="dropdown">
+
+                        <button class="btn btn-sm btn-outline-secondary py-0 px-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            <i class="bi bi-three-dots-vertical"></i>
+
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <li><a class="dropdown-item" href="{{ url_for('goals.details', goal_id=data.goal.id) }}">Detalhes</a></li>
+
+                            <li><a class="dropdown-item" href="{{ url_for('goals.edit_goal', goal_id=data.goal.id) }}">Editar</a></li>
+
+                            
+
+                            {% if data.goal.status == 'Ativa' and data.progress_percent >= 100 %}
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+
+                                <form action="{{ url_for('goals.concluir', goal_id=data.goal.id) }}" method="post" class="d-inline">
+
+                                    <button type="submit" class="dropdown-item text-success">
+
+                                        <i class="bi bi-check-circle-fill me-2"></i>Concluir Meta
+
+                                    </button>
+
+                                </form>
+
+                            </li>
+
+                            {% endif %}
+
+
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+
+                                <a class="dropdown-item text-danger" href="{{ url_for('goals.delete_goal', goal_id=data.goal.id) }}" onclick="return confirm('Tem certeza que deseja excluir esta meta? Todas as contribuições também serão perdidas.');">
+
+                                    Excluir
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="mb-2">
+
+                    <span class="fw-bold fs-5 text-success">{{ data.saved_value | currency }}</span>
+
+                    <span class="text-muted">de {{ data.goal.target_value | currency }}</span>
+
+                </div>
+
+                
+
+                <div class="progress" role="progressbar" aria-label="Progresso da meta" aria-valuenow="{{ data.progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+
+                    <div class="progress-bar {% if data.goal.status == 'Concluída' %}bg-info{% endif %}" style="width: {{ data.progress_percent }}%">
+
+                        {{ '%.0f'|format(data.progress_percent) }}%
+
+                    </div>
+
+                </div>
+
+                
+
+                <div class="d-flex justify-content-between mt-1">
+
+                    <small class="text-muted">Faltam {{ data.remaining_value | currency }}</small>
+
+                    {% if data.goal.target_date %}
+
+                        <small class="text-muted">Até {{ data.goal.target_date.strftime('%d/%m/%Y') }}</small>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center">
+
+                 <a href="{{ url_for('goals.details', goal_id=data.goal.id) }}" class="btn {% if data.goal.status == 'Ativa' %}btn-success{% else %}btn-secondary{% endif %} btn-sm w-100">
+
+                    {% if data.goal.status == 'Ativa' %}Adicionar Contribuição{% else %}Ver Detalhes{% endif %}
+
+                 </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
+{% endblock %}

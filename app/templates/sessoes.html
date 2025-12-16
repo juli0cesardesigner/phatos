@@ -1,0 +1,93 @@
+<!-- app/templates/sessoes.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>Ensaios</h1>
+    </div>
+    <div class="col-md-2 text-end">
+        <a href="{{ url_for('sessions.add_session') }}" class="btn btn-primary">Adicionar Novo</a>
+    </div>
+</div>
+
+<div class="card p-3 my-3">
+    <form method="get" class="row g-3 align-items-end" id="filter-form">
+        <div class="col-md-3">{{ filter_form.search(class="form-control auto-submit", placeholder="Buscar por Nome/Código...") }}</div>
+        <div class="col-md-2">{{ filter_form.client(class="form-select auto-submit") }}</div>
+        <div class="col-md-2">{{ filter_form.session_type(class="form-select auto-submit") }}</div>
+        <div class="col-md-2">{{ filter_form.status(class="form-select auto-submit") }}</div>
+        <div class="col-md-2">{{ filter_form.sort_by(class="form-select auto-submit") }}</div>
+        <div class="col-auto ms-auto">
+            <a href="{{ url_for('sessions.sessoes') }}" class="btn btn-outline-secondary">Limpar</a>
+        </div>
+    </form>
+</div>
+
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th class="text-center">
+                {% if filter_form.status.data == 'arquivados' %}
+                    Status
+                {% else %}
+                    Status do Fluxo
+                {% endif %}
+            </th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for session in sessions %}
+        <tr>
+            <td><a href="{{ url_for('sessions.edit_session', session_id=session.id) }}"><small>{{ session.session_code }}</small></a></td>
+            <td>{{ session.session_date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ session.client.name }}</td>
+            <td>{{ session.type.name }}</td>
+            <td class="text-center">
+                <span class="badge {% if filter_form.status.data == 'arquivados' %}bg-secondary{% else %}bg-info{% endif %}">
+                    {{ session.kanban_status }}
+                </span>
+            </td>
+            <td class="text-end">
+                {% if filter_form.status.data == 'arquivados' %}
+                    <a href="{{ url_for('sessions.restore_session', session_id=session.id) }}" class="btn btn-success btn-sm" onclick="return confirm('Deseja retornar este ensaio para a coluna \'Agendado\' no Fluxo de Trabalho?');">Restaurar ao Fluxo</a>
+                {% endif %}
+                <a href="{{ url_for('sessions.edit_session', session_id=session.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+                <a href="{{ url_for('sessions.delete_session', session_id=session.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza? A exclusão do ensaio também removerá TODAS as transações financeiras associadas a ele.');">Excluir</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center">Nenhum ensaio encontrado para os filtros selecionados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterForm = document.getElementById('filter-form');
+    let debounceTimer;
+
+    filterForm.addEventListener('input', (event) => {
+        if (event.target.type === 'text') {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterForm.submit();
+            }, 500);
+        }
+    });
+    
+    filterForm.addEventListener('change', (event) => {
+        if (event.target.tagName === 'SELECT') {
+            filterForm.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

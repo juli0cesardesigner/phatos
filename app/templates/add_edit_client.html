@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>{{ title }}</h1>
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">Informações de Contato</h5>
+                <div class="mb-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control") }}
+                    {% for error in form.name.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="row">
+                    <div class="col-md-7 mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                        {% for error in form.email.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-5 mb-3">
+                        {{ form.whatsapp.label(class="form-label") }}
+                        {{ form.whatsapp(class="form-control") }}
+                        {% for error in form.whatsapp.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">Marketing e CRM</h5>
+                 <div class="row">
+                    <div class="col-md-4 mb-3">
+                        {{ form.lead_source.label(class="form-label") }}
+                        {{ form.lead_source(class="form-select") }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-control", placeholder=form.tags.description) }}
+                    </div>
+                     <div class="col-md-4 mb-3">
+                        {{ form.main_contact_birthday.label(class="form-label") }}
+                        {{ form.main_contact_birthday(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">Endereço (Opcional)</h5>
+                 <div class="row">
+                    <div class="col-md-12 mb-3">
+                         {{ form.address_street.label(class="form-label") }}
+                         {{ form.address_street(class="form-control") }}
+                    </div>
+                </div>
+                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                         {{ form.address_city.label(class="form-label") }}
+                         {{ form.address_city(class="form-control") }}
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        {{ form.address_state.label(class="form-label") }}
+                        {{ form.address_state(class="form-control") }}
+                    </div>
+                     <div class="col-md-4 mb-3">
+                         {{ form.address_zip_code.label(class="form-label") }}
+                         {{ form.address_zip_code(class="form-control") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <div class="mb-3">
+                    {{ form.notes.label(class="form-label") }}
+                    {{ form.notes(class="form-control", rows=4) }}
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('crm.index') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

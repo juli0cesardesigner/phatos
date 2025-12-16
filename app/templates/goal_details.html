@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+
+        <h1 class="mb-0">{{ goal.name }}</h1>
+
+        {% if goal.target_date %}
+
+            <small class="text-muted">Data Alvo: {{ goal.target_date.strftime('%d/%m/%Y') }}</small>
+
+        {% endif %}
+
+    </div>
+
+    <a href="{{ url_for('goals.index', status=goal.status) }}" class="btn btn-secondary">Voltar</a>
+
+</div>
+
+
+
+
+
+<div class="row">
+
+    <!-- Coluna da Esquerda: Resumo e Adicionar Contribuição -->
+
+    <div class="col-md-5">
+
+        <div class="card mb-4">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Resumo Financeiro</h5>
+
+                <div class="mb-2">
+
+                    <span class="fw-bold fs-4 text-success">{{ saved_value | currency }}</span>
+
+                    <span class="text-muted">/ {{ goal.target_value | currency }}</span>
+
+                </div>
+
+                
+
+                <div class="progress mb-3" role="progressbar" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 25px;">
+
+                    <div class="progress-bar" style="width: {% if progress_percent > 100 %}100{% else %}{{ progress_percent }}{% endif %}%">
+
+                        {{ '%.1f'|format(progress_percent) }}%
+
+                    </div>
+
+                </div>
+
+                
+
+                <p><strong>Valor Restante:</strong> 
+
+                    <span class="{% if remaining_value < 0 %}text-danger{% endif %}">
+
+                        {{ remaining_value | currency }}
+
+                    </span>
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        {% if goal.status == 'Ativa' and saved_value < goal.target_value %}
+
+        <div class="card mb-4">
+
+            <div class="card-header">
+
+                Adicionar Nova Contribuição
+
+            </div>
+
+            <div class="card-body">
+
+                <form action="{{ url_for('goals.details', goal_id=goal.id) }}" method="POST" novalidate>
+
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+
+                        {{ form.value.label(class="form-label") }}
+
+                        {{ form.value(class="form-control currency-input") }}
+
+                        {% for error in form.value.errors %}
+
+                        <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+
+                        {% endfor %}
+
+                    </div>
+
+                     <div class="mb-3">
+
+                        {{ form.contribution_date.label(class="form-label") }}
+
+                        {{ form.contribution_date(class="form-control") }}
+
+                        {% for error in form.contribution_date.errors %}
+
+                        <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="text-end">
+
+                        {{ form.submit(class="btn btn-success") }}
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="alert alert-info">
+
+            {% if goal.status != 'Ativa' %}
+
+                Esta meta está <strong>{{ goal.status }}</strong>. Novas contribuições não podem ser adicionadas.
+
+            {% else %}
+
+                A meta já foi atingida. Para adicionar novos valores, <a href="{{ url_for('goals.edit_goal', goal_id=goal.id) }}" class="alert-link">edite o valor alvo</a> primeiro ou marque a meta como concluída.
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+
+
+        {% if goal.notes %}
+
+        <div class="card">
+
+             <div class="card-header">Observações</div>
+
+             <div class="card-body">
+
+                <p>{{ goal.notes|safe|nl2br }}</p>
+
+             </div>
+
+        </div>
+
+        {% endif %}
+
+
+
+    </div>
+
+
+
+    <!-- Coluna da Direita: Histórico -->
+
+    <div class="col-md-7">
+
+        <h4>Histórico de Contribuições</h4>
+
+        <table class="table table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>Data</th>
+
+                    <th class="text-end">Valor</th>
+
+                    <th class="text-end">Ações</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for c in contributions %}
+
+                <tr>
+
+                    <td>{{ c.contribution_date.strftime('%d/%m/%Y') }}</td>
+
+                    <td class="text-end text-success">{{ c.value | currency }}</td>
+
+                    <td class="text-end">
+
+                        <a href="{{ url_for('goals.delete_contribution', goal_id=goal.id, contribution_id=c.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza?');">
+
+                            Excluir
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="3" class="text-center">Nenhuma contribuição registrada ainda.</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    // Seta a data de hoje por padrão no campo de data da contribuição
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const dateField = document.getElementById('contribution_date');
+
+        if (dateField && !dateField.value) { // Só preenche se estiver vazio
+
+            const today = new Date().toISOString().split('T')[0];
+
+            dateField.value = today;
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

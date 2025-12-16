@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>Tipos de Ensaio</h1>
+    </div>
+    <div class="col-md-2 text-end">
+        <a href="{{ url_for('config.add_session_type') }}" class="btn btn-primary">Adicionar Novo</a>
+    </div>
+</div>
+
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Abreviatura</th>
+            <th class="text-center">Prazo Seleção</th>
+            <th class="text-center">Prazo Edição</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for type in session_types %}
+        <tr>
+            <td>{{ type.name }}</td>
+            <td><span class="badge bg-secondary">{{ type.abbreviation }}</span></td>
+            <td class="text-center">{{ type.selection_deadline_days }} dias</td>
+            <td class="text-center">{{ type.editing_deadline_days }} dias</td>
+            <td class="text-end">
+                <a href="{{ url_for('config.edit_session_type', id=type.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+                <a href="{{ url_for('config.delete_session_type', id=type.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este tipo de ensaio?');">Excluir</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5" class="text-center">Nenhum tipo de ensaio cadastrado.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

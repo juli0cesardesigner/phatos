@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Registrar</h1>
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
+                {% for error in form.username.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.password2.label(class="form-label") }}
+                {{ form.password2(class="form-control") }}
+                {% for error in form.password2.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <p>{{ form.submit(class="btn btn-primary") }}</p>
+        </form>
+    </div>
+</div>
+{% endblock %}

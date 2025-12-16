@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+
+<h3 class="mb-3">Resumo de {{ month_name }}</h3>
+
+<div class="row mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-success">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Entradas do Mês</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ total_entries_month | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-danger">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Saídas do Mês</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ total_exits_month | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-info">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Saldo do Mês</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ balance_month | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<h3 class="mb-3 mt-5">Resumo de {{ current_year }}</h3>
+
+<div class="row mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-success-subtle border-success">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Entradas do Ano</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ total_entries_year | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-danger-subtle border-danger">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Saídas do Ano</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ total_exits_year | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card text-white bg-info-subtle border-info">
+
+            <div class="card-body">
+
+                <h5 class="card-title">Saldo do Ano</h5>
+
+                <p class="card-text fs-4 fw-bold">{{ balance_year | currency }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <div class="card">
+
+            <div class="card-body text-center">
+
+                <h3>Ensaios em {{ month_name }}</h3>
+
+                <p class="display-4">{{ monthly_session_count }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card">
+
+            <div class="card-body text-center">
+
+                <h3>Ensaios em {{ current_year }}</h3>
+
+                <p class="display-4">{{ yearly_session_count }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

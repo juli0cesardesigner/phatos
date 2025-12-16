@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Perfil: {{ client.name }}</h1>
+    </div>
+    <div>
+        <a href="{{ url_for('crm.edit', client_id=client.id) }}" class="btn btn-secondary">Editar Perfil</a>
+        <a href="{{ url_for('crm.index') }}" class="btn btn-outline-secondary">Voltar à Lista</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Coluna Esquerda: Detalhes do Cliente e Interações -->
+    <div class="col-md-5">
+        <!-- Detalhes do Cliente (Contato, Marketing, Notas) -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Detalhes do Cliente</h5>
+                <p><strong><i class="bi bi-whatsapp me-2 text-success"></i>WhatsApp:</strong> {{ client.whatsapp or 'Não informado' }}</p>
+                <p><strong><i class="bi bi-envelope me-2 text-info"></i>Email:</strong> {{ client.email or 'Não informado' }}</p>
+                {% if client.main_contact_birthday %}
+                    <p><strong><i class="bi bi-calendar-heart me-2 text-danger"></i>Aniversário:</strong> {{ client.main_contact_birthday.strftime('%d/%m/%Y') }}</p>
+                {% endif %}
+                <hr>
+                <p><strong>Origem:</strong> 
+                    <span class="badge bg-secondary">{{ client.lead_source or 'Não informado' }}</span>
+                </p>
+                <p><strong>Tags:</strong> 
+                    {% if client.tags %}
+                        {% for tag in client.tags.split(',') %}
+                            <span class="badge bg-primary">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted small">Nenhuma tag</span>
+                    {% endif %}
+                </p>
+                 {% if client.notes %}
+                    <hr>
+                    <h6>Observações:</h6>
+                    <p class="small text-muted">{{ client.notes | nl2br }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Histórico de Interações -->
+        <div class="card">
+            <div class="card-header">
+                Histórico de Interações
+            </div>
+            <div class="card-body">
+                <!-- Formulário de Nova Interação -->
+                <form action="{{ url_for('crm.add_interaction', client_id=client.id) }}" method="post" class="mb-4">
+                    {{ interaction_form.hidden_tag() }}
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            {{ interaction_form.interaction_date(class="form-control form-control-sm") }}
+                            {% for error in interaction_form.interaction_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ interaction_form.channel(class="form-select form-select-sm") }}
+                            {% for error in interaction_form.channel.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        {{ interaction_form.notes(class="form-control form-control-sm", rows=2, placeholder="Descreva a interação...") }}
+                        {% for error in interaction_form.notes.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="text-end mt-2">
+                        {{ interaction_form.submit(class="btn btn-primary btn-sm") }}
+                    </div>
+                </form>
+
+                <!-- Lista de Interações -->
+                {% if interactions %}
+                <ul class="list-group list-group-flush">
+                    {% for interaction in interactions %}
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">{{ interaction.channel }} <span class="text-muted small">em {{ interaction.interaction_date.strftime('%d/%m/%Y') }}</span></div>
+                            <small>{{ interaction.notes }}</small>
+                        </div>
+                        <form action="{{ url_for('crm.delete_interaction', interaction_id=interaction.id) }}" method="post" onsubmit="return confirm('Tem certeza?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger p-0 px-1"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-center text-muted small mt-3">Nenhum registro de interação encontrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna Direita: Histórico de Ensaios -->
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <h4>Histórico de Ensaios</h4>
+            </div>
+             <div class="card-body">
+                <p class="text-muted">Valor total gasto no estúdio: <strong>{{ total_paid | currency }}</strong></p>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Valor Pago</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td><small>{{ session.session_code }}</small></td>
+                            <td>{{ session.session_date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ session.type.name }}</td>
+                            <td class="text-end">{{ paid_amounts.get(session.id, 0.0) | currency }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('sessions.edit_session', session_id=session.id) }}" class="btn btn-secondary btn-sm">Ver/Editar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhum ensaio encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+             </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

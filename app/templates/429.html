@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+    <div class="text-center text-warning mb-4">
+        <i class="bi bi-shield-lock-fill" style="font-size: 4rem;"></i>
+    </div>
+    <h1 class="display-4 text-danger fw-bold">Acesso Bloqueado</h1>
+    <p class="lead mb-2">Muitas tentativas a partir do seu IP.</p>
+    
+    <!-- MOSTRADOR DO CRONÔMETRO -->
+    <div class="h4 mb-4 text-light">
+        Liberação em: <span id="timer" class="badge bg-danger fw-normal">00:00</span>
+    </div>
+    
+    <div class="card border-warning mb-4" style="max-width: 500px;">
+        <div class="card-body">
+            <h5 class="card-title text-warning">Por favor, aguarde.</h5>
+            <p class="card-text mb-0">
+                Para proteger o sistema, suspendemos temporariamente suas requisições. 
+                Esta página será <strong>recarregada automaticamente</strong> assim que o tempo acabar.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Barra de progresso visual -->
+    <div class="progress w-100 mb-3" style="max-width: 300px; height: 4px;">
+        <div id="progress-bar" class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Recebe o valor do Python (backend)
+    let timeLeft = {{ wait_seconds }};
+    const originalTime = timeLeft;
+    
+    const timerEl = document.getElementById('timer');
+    const progressBarEl = document.getElementById('progress-bar');
+    const redirectUrl = "{{ url_for('auth.login') }}"; // Redireciona direto pro login
+
+    function updateTimer() {
+        if (timeLeft <= 0) {
+            timerEl.textContent = "Redirecionando...";
+            window.location.href = redirectUrl;
+            return;
+        }
+
+        // Formatação MM:SS
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const displayStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        timerEl.textContent = displayStr;
+        
+        // Atualiza barra de progresso
+        const percent = (timeLeft / originalTime) * 100;
+        progressBarEl.style.width = percent + "%";
+
+        timeLeft--;
+        setTimeout(updateTimer, 1000);
+    }
+
+    // Inicia o contador
+    updateTimer();
+});
+</script>
+{% endblock %}

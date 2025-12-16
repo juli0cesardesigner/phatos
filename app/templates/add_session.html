@@ -1,0 +1,92 @@
+<!-- app/templates/add_session.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Adicionar Novo Ensaio</h1>
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <!-- SEÇÃO CLIENTE -->
+            <div class="card p-3 mb-3">
+                <div class="form-check form-switch mb-3">{{ form.is_new_family(class="form-check-input", role="switch", id="newFamilySwitch") }} {{ form.is_new_family.label(class="form-check-label") }}</div>
+                <div id="existingFamilyGroup">
+                    <div class="mb-3">{{ form.client.label(class="form-label") }} {{ form.client(class="form-select") }} {% for error in form.client.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                </div>
+                <div id="newFamilyGroup" class="d-none">
+                    <div class="mb-3">{{ form.new_family_name.label(class="form-label") }} {{ form.new_family_name(class="form-control") }} {% for error in form.new_family_name.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                    <div class="row">
+                        <div class="col-md-7">{{ form.new_family_email.label(class="form-label") }} {{ form.new_family_email(class="form-control") }} {% for error in form.new_family_email.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                        <div class="col-md-5">{{ form.new_family_whatsapp.label(class="form-label") }} {{ form.new_family_whatsapp(class="form-control") }} {% for error in form.new_family_whatsapp.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.new_lead_source.label(class="form-label") }}
+                            {{ form.new_lead_source(class="form-select") }}
+                        </div>
+                         <div class="col-md-6 mb-3">
+                            {{ form.new_client_tags.label(class="form-label") }}
+                            {{ form.new_client_tags(class="form-control", placeholder=form.new_client_tags.description) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- TIPO E DATA -->
+            <div class="row mb-3">
+                <div class="col-md-7">{{ form.session_type.label() }} {{ form.session_type(class="form-select") }} {% for error in form.session_type.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                <div class="col-md-5">{{ form.session_date.label() }} {{ form.session_date(class="form-control", type="date") }} {% for error in form.session_date.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+            </div>
+            <hr class="my-4">
+            <!-- VALORES -->
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.total_value.label() }} {{ form.total_value(class="form-control currency-input") }} {% for error in form.total_value.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                <div class="col-auto">{{ form.total_value_paid(class="form-check-input d-none", id="total_paid_check") }}<label class="form-check-label payment-icon-label" for="total_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.down_payment.label() }} {{ form.down_payment(class="form-control currency-input") }} {% for error in form.down_payment.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}</div>
+                <div class="col-auto">{{ form.down_payment_paid(class="form-check-input d-none", id="down_paid_check") }}<label class="form-check-label payment-icon-label" for="down_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <h5 class="mt-4">Valores Adicionais</h5>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.extra_photos_qty.label() }} {{ form.extra_photos_qty(class="form-control", placeholder="0") }}</div>
+                <div class="col">{{ form.extra_photo_unit_price.label() }} {{ form.extra_photo_unit_price(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.extra_photos_paid(class="form-check-input d-none", id="extras_paid_check") }}<label class="form-check-label payment-icon-label" for="extras_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.printing_qty.label() }} {{ form.printing_qty(class="form-control", placeholder="0") }}</div>
+                <div class="col">{{ form.printing_unit_price.label() }} {{ form.printing_unit_price(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.printing_paid(class="form-check-input d-none", id="printing_paid_check") }}<label class="form-check-label payment-icon-label" for="printing_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <hr class="my-4">
+            <div class="mb-3">
+                {{ form.session_cost.label() }}
+                {{ form.session_cost(class="form-control currency-input") }}
+                {% for error in form.session_cost.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">{{ form.notes.label(class="form-label") }} {{ form.notes(class="form-control", rows=3) }}</div>
+            <div class="text-center"><p>{{ form.submit(class="btn btn-primary") }} {{ form.submit_and_new(class="btn btn-info") }} <a href="{{ url_for('sessions.sessoes') }}" class="btn btn-secondary">Cancelar</a></p></div>
+        </form>
+    </div>
+</div>
+<script>
+    const nfs=document.getElementById('newFamilySwitch'); if(nfs){nfs.addEventListener('change',function(){document.getElementById('existingFamilyGroup').classList.toggle('d-none',this.checked);document.getElementById('newFamilyGroup').classList.toggle('d-none',!this.checked);});}
+    document.querySelectorAll('label[for$="_paid_check"]').forEach(label => {
+        const check = document.getElementById(label.getAttribute('for'));
+        const iconPaid = label.querySelector('.icon-paid-color');
+        const iconUnpaid = label.querySelector('.icon-unpaid-color');
+        function updateIcons() {
+            if (check.checked) {
+                iconPaid.style.display = 'inline-block';
+                iconUnpaid.style.display = 'none';
+            } else {
+                iconPaid.style.display = 'none';
+                iconUnpaid.style.display = 'inline-block';
+            }
+        }
+        updateIcons();
+        label.addEventListener('click', function() {
+            setTimeout(updateIcons, 0);
+        });
+    });
+</script>
+{% endblock %}

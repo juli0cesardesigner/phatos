@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Editar Transação</h1>
+        <form action="{{ url_for('finance.edit_transaction', transaction_id=transaction.id, **query_params) }}" method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {% if transaction.session_id %}
+                    {{ form.description(class="form-control", readonly=true, title="Descrições de transações de ensaio não podem ser alteradas.") }}
+                    <small class="form-text text-muted">Para alterar esta descrição, edite o ensaio correspondente.</small>
+                {% else %}
+                    {{ form.description(class="form-control") }}
+                {% endif %}
+                {% for error in form.description.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.value.label(class="form-label") }}
+                    {{ form.value(class="form-control currency-input") }}
+                    {% for error in form.value.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.transaction_date.label(class="form-label") }}
+                    {{ form.transaction_date(class="form-control") }}
+                    {% for error in form.transaction_date.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.transaction_type.label(class="form-label") }}
+                {% if transaction.session_id %}
+                     {{ form.transaction_type(class="form-select", disabled=true) }}
+                {% else %}
+                     {{ form.transaction_type(class="form-select") }}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.tags.label(class="form-label") }}
+                {{ form.tags(class="form-control", placeholder="Ex: aluguel, luz, comida") }}
+            </div>
+
+            <!-- SEÇÃO DE EDIÇÃO DE RECORRÊNCIA -->
+            {% if transaction.recurrence_id %}
+            <hr>
+            <div class="card p-3">
+                <p class="fw-bold">Este lançamento se repete em outras datas.</p>
+                {% for choice in form.edit_scope %}
+                <div class="form-check">
+                    {{ choice(class="form-check-input") }}
+                    {{ choice.label(class="form-check-label") }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('finance.index', **query_params) }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

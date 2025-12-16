@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>{{ title }}</h1>
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.name.label(class="form-label", text="Nome do Tipo de Ensaio") }}
+                {{ form.name(class="form-control") }}
+                {% for error in form.name.errors %}
+                    <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.abbreviation.label(class="form-label") }}
+                {{ form.abbreviation(class="form-control") }}
+                {% for error in form.abbreviation.errors %}
+                    <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.selection_deadline_days.label(class="form-label") }}
+                    {{ form.selection_deadline_days(class="form-control") }}
+                    {% for error in form.selection_deadline_days.errors %}
+                        <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.editing_deadline_days.label(class="form-label") }}
+                    {{ form.editing_deadline_days(class="form-control") }}
+                    {% for error in form.editing_deadline_days.errors %}
+                        <div class="alert alert-danger p-1 mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <p>
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('config.session_types') }}" class="btn btn-secondary">Cancelar</a>
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}

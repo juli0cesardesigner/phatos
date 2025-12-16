@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Editar Ensaio</h1>
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">{{ form.client.label(class="form-label") }} {{ form.client(class="form-select") }}</div>
+
+            <div class="row mb-3">
+                <div class="col-md-7">{{ form.session_type.label() }} {{ form.session_type(class="form-select") }}</div>
+                <div class="col-md-5">{{ form.session_date.label() }} {{ form.session_date(class="form-control", type="date") }}</div>
+            </div>
+            <hr class="my-4">
+            
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.total_value.label() }} {{ form.total_value(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.total_value_paid(class="form-check-input d-none", id="total_paid_check") }}<label class="form-check-label payment-icon-label" for="total_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.down_payment.label() }} {{ form.down_payment(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.down_payment_paid(class="form-check-input d-none", id="down_paid_check") }}<label class="form-check-label payment-icon-label" for="down_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            
+            <h5 class="mt-4">Valores Adicionais</h5>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.extra_photos_qty.label() }} {{ form.extra_photos_qty(class="form-control") }}</div>
+                <div class="col">{{ form.extra_photo_unit_price.label() }} {{ form.extra_photo_unit_price(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.extra_photos_paid(class="form-check-input d-none", id="extras_paid_check") }}<label class="form-check-label payment-icon-label" for="extras_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            <div class="row align-items-center mb-3">
+                <div class="col">{{ form.printing_qty.label() }} {{ form.printing_qty(class="form-control") }}</div>
+                <div class="col">{{ form.printing_unit_price.label() }} {{ form.printing_unit_price(class="form-control currency-input") }}</div>
+                <div class="col-auto">{{ form.printing_paid(class="form-check-input d-none", id="printing_paid_check") }}<label class="form-check-label payment-icon-label" for="printing_paid_check"><i class="bi bi-hand-thumbs-up-fill icon-paid-color"></i><i class="bi bi-hand-thumbs-down-fill icon-unpaid-color"></i></label></div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="mb-3">
+                {{ form.session_cost.label() }}
+                {{ form.session_cost(class="form-control currency-input") }}
+                {% for error in form.session_cost.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="mb-3">{{ form.notes.label(class="form-label") }} {{ form.notes(class="form-control", rows=3) }}</div>
+            <div class="text-center"><p>{{ form.submit(class="btn btn-primary") }} <a href="{{ url_for('sessions.sessoes') }}" class="btn btn-secondary">Cancelar</a></p></div>
+        </form>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('label[for$="_paid_check"]').forEach(label => {
+        const check = document.getElementById(label.getAttribute('for'));
+        const iconPaid = label.querySelector('.icon-paid-color');
+        const iconUnpaid = label.querySelector('.icon-unpaid-color');
+        function updateIcons() {
+            if (check.checked) {
+                iconPaid.style.display = 'inline-block';
+                iconUnpaid.style.display = 'none';
+            } else {
+                iconPaid.style.display = 'none';
+                iconUnpaid.style.display = 'inline-block';
+            }
+        }
+        updateIcons();
+        label.addEventListener('click', function() {
+            setTimeout(updateIcons, 0);
+        });
+    });
+</script>
+{% endblock %}

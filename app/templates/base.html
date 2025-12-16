@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhatosApp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/slate/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <style>
+        /* CSS EXCLISIVO PARA FORÇAR A DIVISÃO IGUALITÁRIA PERFEITA */
+        @media (min-width: 992px) {
+            /* Centraliza o texto/ícones verticalmente e horizontalmente */
+            .navbar-nav.nav-justified > .nav-item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                border-right: 1px solid rgba(255, 255, 255, 0.1); /* Opcional: separador visual */
+            }
+            .navbar-nav.nav-justified > .nav-item:last-child {
+                border-right: none;
+            }
+            /* Força a marca a se comportar como um link normal para alinhamento */
+            .navbar-brand-centered {
+                width: 100%;
+                text-align: center;
+                margin: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary mb-4 p-0">
+        <!-- "container" ALINHA O MENU COM O CONTEÚDO DOS BOXES ABAIXO -->
+        <div class="container">
+
+            <!-- MARCA MOBILE (Visível apenas < 992px) -->
+            <a class="navbar-brand d-lg-none ms-2 my-2" href="{{ url_for('sessions.index') }}">PhatosApp</a>
+
+            <button class="navbar-toggler my-2 me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                
+                <!-- nav-justified: DIVIDE O ESPAÇO IGUALMENTE -->
+                <!-- w-100: Ocupa toda a largura do container -->
+                <ul class="navbar-nav nav-justified w-100 m-0 p-0">
+                    
+                    {% if current_user.is_authenticated %}
+                        
+                        <!-- 1. LOGO (Como item de lista, apenas desktop) -->
+                        <li class="nav-item d-none d-lg-flex">
+                            <a class="navbar-brand navbar-brand-centered fs-5 fw-bold py-3" href="{{ url_for('sessions.index') }}">PhatosApp</a>
+                        </li>
+
+                        <!-- 2. LINKS (Todos com mesmo peso) -->
+                        <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('sessions.sessoes') }}">Ensaios</a></li>
+                        {# <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('crm.index') }}">Clientes</a></li> #}
+                        {# <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('kanban.index') }}">Fluxo</a></li> #}
+                        <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('finance.index') }}">Lançamentos</a></li>
+                        {# <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('goals.index') }}">Metas</a></li> #}
+                        {# <li class="nav-item"><a class="nav-link py-3 w-100" href="{{ url_for('reports.index') }}">Relatórios</a></li> #}
+                        
+                        <!-- 3. CONFIGURAÇÕES -->
+                        {# <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle py-3 w-100" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Configurações
+                            </a>
+                            <ul class="dropdown-menu text-center w-100">
+                                <li><a class="dropdown-item" href="{{ url_for('config.session_types') }}">Tipos de Ensaio</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('config.pricing') }}">Preços Padrão</a></li>
+                            </ul>
+                        </li> #}
+
+                        <!-- 4. SAIR -->
+                        <li class="nav-item">
+                            <a class="nav-link py-3 w-100 text-danger" href="{{ url_for('auth.logout') }}" title="Sair do Sistema">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </a>
+                        </li>
+
+                    {% else %}
+                        <li class="nav-item d-none d-lg-flex">
+                            <span class="navbar-brand navbar-brand-centered py-3 text-muted">PhatosApp</span>
+                        </li>
+                        <li class="nav-item ms-auto">
+                            <a class="nav-link py-3" href="{{ url_for('auth.login') }}">Entrar</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="{% if request.blueprint == 'kanban' %}kanban-full-width{% else %}container{% endif %}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.currency-input').forEach(function(element) {
+            const initialValue = element.getAttribute('data-value');
+            const maskOptions = {
+                mask: 'R$ num',
+                blocks: {
+                    num: {
+                        mask: Number,
+                        scale: 2,
+                        thousandsSeparator: '.',
+                        padFractionalZeros: true,
+                        radix: ',',
+                        mapToRadix: ['.']
+                    }
+                }
+            };
+            const mask = IMask(element, maskOptions);
+            if (initialValue) mask.typedValue = parseFloat(initialValue);
+        });
+
+        document.querySelectorAll('.alert').forEach(function(alertElement) {
+            setTimeout(function() {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alertElement);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+    </script>
+</body>
+</html>

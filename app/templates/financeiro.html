@@ -1,0 +1,109 @@
+<!-- app/templates/financeiro.html -->
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if use_month_nav %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    {% set nav_params = query_params.copy() %}
+    {% set _ = nav_params.pop('month', None) %}
+    {% set _ = nav_params.pop('year', None) %}
+    <a href="{{ url_for('finance.index', month=prev_month.month, year=prev_month.year, **nav_params) }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+    <h1 class="mb-0">{{ month_name }} de {{ year }}</h1>
+    <a href="{{ url_for('finance.index', month=next_month.month, year=next_month.year, **nav_params) }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
+</div>
+{% else %}
+<div class="mb-4">
+    <h1 class="mb-0">Lançamentos (Filtro Personalizado)</h1>
+</div>
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-md-4"><div class="card text-white bg-success"><div class="card-body"><h5 class="card-title">Entradas Efetivadas</h5><p class="card-text fs-4 fw-bold">{{ total_entries | currency }}</p></div></div></div>
+    <div class="col-md-4"><div class="card text-white bg-danger"><div class="card-body"><h5 class="card-title">Saídas Efetivadas</h5><p class="card-text fs-4 fw-bold">{{ total_exits | currency }}</p></div></div></div>
+    <div class="col-md-4"><div class="card text-white bg-info"><div class="card-body"><h5 class="card-title">Saldo Efetivado</h5><p class="card-text fs-4 fw-bold">{{ balance | currency }}</p></div></div></div>
+</div>
+
+<div class="card p-3 my-3">
+    <form method="get" class="row g-3 align-items-end" id="filter-form">
+        {% if use_month_nav %}
+        <input type="hidden" name="month" value="{{ request.args.get('month') }}">
+        <input type="hidden" name="year" value="{{ request.args.get('year') }}">
+        {% endif %}
+        <div class="col-md-12"><label class="form-label small">{{ filter_form.search.label }}</label>{{ filter_form.search(class="form-control auto-submit", placeholder="Buscar por descrição...") }}</div>
+        <div class="col-md-3"><label class="form-label small">{{ filter_form.trans_type.label }}</label>{{ filter_form.trans_type(class="form-select auto-submit") }}</div>
+        <div class="col-md-3"><label class="form-label small">{{ filter_form.client.label }}</label>{{ filter_form.client(class="form-select auto-submit") }}</div>
+        <div class="col-md-2"><label class="form-label small">{{ filter_form.start_date.label }}</label>{{ filter_form.start_date(class="form-control auto-submit", type="date") }}</div>
+        <div class="col-md-2"><label class="form-label small">{{ filter_form.end_date.label }}</label>{{ filter_form.end_date(class="form-control auto-submit", type="date") }}</div>
+        <div class="col-md-2"><a href="{{ url_for('finance.index') }}" class="btn btn-outline-secondary w-100">Limpar Filtros</a></div>
+    </form>
+</div>
+
+<div class="text-end mb-3"><a href="{{ url_for('finance.add_transaction') }}" class="btn btn-primary">Adicionar Lançamento</a></div>
+
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th class="text-center">Status</th>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+            <th class="text-end">Valor</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transaction in transactions %}
+        <tr class="{% if transaction.status == 'previsto' %}text-muted{% endif %}">
+            <td class="text-center">
+                <form action="{{ url_for('finance.toggle_status', transaction_id=transaction.id, **query_params) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm p-0" title="Alterar status">
+                        {% if transaction.status == 'efetivado' %}
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        {% else %}
+                            <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                        {% endif %}
+                    </button>
+                </form>
+            </td>
+            <td>{{ transaction.transaction_date.strftime('%d/%m/%Y') }}</td>
+            <td><span class="badge bg-{% if transaction.transaction_type == 'entry' %}success{% else %}danger{% endif %}">{{ 'Entrada' if transaction.transaction_type == 'entry' else 'Saída' }}</span></td>
+            <td>
+                {% if transaction.session_id %}
+                    {% set parts = transaction.description.split(': ', 1) %}
+                    {{ parts[0] }}: <a href="{{ url_for('sessions.edit_session', session_id=transaction.session_id) }}">{{ parts[1] }}</a>
+                {% else %}
+                    {{ transaction.description }}
+                {% endif %}
+            </td>
+            <td class="text-end fw-bold {% if transaction.transaction_type == 'entry' %}text-success{% else %}text-danger{% endif %}">{{ transaction.value | currency }}</td>
+            <td class="text-end">
+                <a href="{{ url_for('finance.edit_transaction', transaction_id=transaction.id, **query_params) }}" class="btn btn-secondary btn-sm">Editar</a>
+                <form action="{{ url_for('finance.delete_transaction', transaction_id=transaction.id, **query_params) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center">Nenhum lançamento encontrado para este período ou filtro.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterForm = document.getElementById('filter-form');
+    let debounceTimer;
+    filterForm.addEventListener('input', (event) => {
+        if (event.target.type === 'text') {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => { filterForm.submit(); }, 500);
+        }
+    });
+    filterForm.addEventListener('change', (event) => {
+        if (event.target.tagName === 'SELECT' || event.target.type === 'date') {
+            filterForm.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Virtual Environment
+venv/
+/venv/
+.venv/
+
+# Local database and instance-specific files
+instance/
+/instance/
+app.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# User-specific files
+sumario_projeto.txt
+ativar ambiente virtual e debug.txt
+Iniciar Phatos.bat

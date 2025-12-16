@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Fluxo de Trabalho</h1>
+
+<div class="kanban-container" id="kanban-container">
+    {% for stage in stages %}
+    {% set is_archive_column = (stage == KANBAN_STAGES[-1]) %}
+    <div class="kanban-column {% if is_archive_column %}kanban-archive-column{% endif %}" data-status="{{ stage }}">
+        
+        <div class="kanban-header">
+            {% if is_archive_column %}
+                <i class="bi bi-archive-fill"></i> {{ stage }}
+            {% else %}
+                {{ stage }} ({{ kanban_data[stage]|length }})
+            {% endif %}
+        </div>
+        
+        <div class="kanban-cards" id="column-{{ loop.index }}" data-status="{{ stage }}">
+            <!-- LOOP ATUALIZADO: A variável agora é a própria session -->
+            {% for session in kanban_data[stage] %}
+            <div class="kanban-card {{ session.deadline_status }} {% if session.printing_qty > 0 %}has-printing{% endif %}" draggable="true" data-session-id="{{ session.id }}">
+                <div class="kanban-card-content">
+                    
+                    <div class="kanban-card-title">
+                        <a href="{{ url_for('sessions.edit_session', session_id=session.id) }}" class="text-white text-decoration-none">{{ session.client.name }}</a>
+                        {% if session.printing_qty > 0 %}
+                            <span class="printing-tag">Imprimir</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="kanban-card-meta">
+                        <span class="badge bg-primary">{{ session.type.abbreviation }}</span>
+                        <span class="badge bg-secondary">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                                        
+                    <div class="kanban-card-meta mt-2">
+                        <small class="text-muted">{{ session.session_code }}</small>
+                    </div>
+                </div>
+                
+                <a href="{{ url_for('sessions.edit_session', session_id=session.id) }}" class="kanban-edit-btn" title="Editar Ensaio">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO DE DATA -->
+<div class="modal fade" id="confirmDateModal" tabindex="-1" aria-labelledby="confirmDateModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="confirmDateModalLabel">Confirmar Data da Seleção</h1>
+                <button type="button" class="btn-close" id="modalCloseBtn" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Confirme a data em que o cliente finalizou a seleção. Esta data iniciará a contagem do prazo de 15 dias para a edição.</p>
+                <form id="dateConfirmForm">
+                    <input type="hidden" id="modalSessionId" name="session_id">
+                    <div class="mb-3">
+                        <label for="modalSelectionDate" class="form-label">Data da Seleção</label>
+                        <input type="date" class="form-control" id="modalSelectionDate" name="selection_date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDateBtn">Cancelar Movimento</button>
+                <button type="button" class="btn btn-primary" id="confirmDateBtn">Confirmar Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const UPDATE_URL = "{{ url_for('kanban.update_status') }}";
+    const CONFIRM_DATE_URL = "{{ url_for('kanban.confirm_selection_date') }}"; 
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const columns = document.querySelectorAll('.kanban-cards');
+        const kanbanContainer = document.getElementById('kanban-container');
+        let draggedCard = null;
+        let originalColumn = null;
+
+        const confirmModalElement = document.getElementById('confirmDateModal');
+        const confirmModal = new bootstrap.Modal(confirmModalElement);
+        const modalSessionIdInput = document.getElementById('modalSessionId');
+        const modalSelectionDateInput = document.getElementById('modalSelectionDate');
+        const confirmDateBtn = document.getElementById('confirmDateBtn');
+        const cancelDateBtn = document.getElementById('cancelDateBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        kanbanContainer.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.kanban-card')) return;
+            isDown = true;
+            kanbanContainer.style.cursor = 'grabbing';
+            startX = e.pageX - kanbanContainer.offsetLeft;
+            scrollLeft = kanbanContainer.scrollLeft;
+        });
+        kanbanContainer.addEventListener('mouseleave', () => { isDown = false; kanbanContainer.style.cursor = 'grab'; });
+        kanbanContainer.addEventListener('mouseup', () => { isDown = false; kanbanContainer.style.cursor = 'grab'; });
+        kanbanContainer.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - kanbanContainer.offsetLeft;
+            const walk = (x - startX) * 2;
+            kanbanContainer.scrollLeft = scrollLeft - walk;
+        });
+
+        document.querySelectorAll('.kanban-card').forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                draggedCard = card;
+                originalColumn = card.closest('.kanban-column');
+                isDown = false; 
+                kanbanContainer.style.cursor = 'grab';
+                setTimeout(() => card.classList.add('dragging'), 0);
+                e.dataTransfer.setData('text/plain', card.dataset.sessionId);
+            });
+            card.addEventListener('dragend', () => {
+                if (draggedCard) draggedCard.classList.remove('dragging');
+                document.querySelectorAll('.kanban-archive-column').forEach(col => col.classList.remove('drag-over'));
+            });
+        });
+
+        columns.forEach(column => {
+            const archiveColumn = column.closest('.kanban-archive-column');
+            column.addEventListener('dragover', (e) => {
+                e.preventDefault(); 
+                if(archiveColumn) archiveColumn.classList.add('drag-over');
+            });
+            column.addEventListener('dragleave', () => {
+                if(archiveColumn) archiveColumn.classList.remove('drag-over');
+            });
+            column.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (archiveColumn) archiveColumn.classList.remove('drag-over');
+                if (!draggedCard) return;
+
+                const newColumn = column.closest('.kanban-column');
+                if (originalColumn === newColumn) return;
+
+                const sessionId = draggedCard.dataset.sessionId;
+                const newStatus = newColumn.dataset.status;
+                
+                updateSessionStatus(sessionId, newStatus, originalColumn, newColumn);
+            });
+        });
+
+        function updateCardCount(columnElement) {
+            if (!columnElement || columnElement.classList.contains('kanban-archive-column')) return;
+            const cardsContainer = columnElement.querySelector('.kanban-cards');
+            const header = columnElement.querySelector('.kanban-header');
+            const status = columnElement.dataset.status;
+            const count = cardsContainer.children.length;
+            header.textContent = `${status} (${count})`;
+        }
+
+        function updateSessionStatus(sessionId, newStatus, oldColumn, newColumn) {
+            fetch(UPDATE_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({session_id: sessionId, new_status: newStatus})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    console.error("Erro:", data.message);
+                    alert("Ocorreu um erro. A página será recarregada para reverter a alteração.");
+                    location.reload();
+                    return;
+                }
+
+                if (data.action_required === 'confirm_selection_date') {
+                    modalSessionIdInput.value = sessionId;
+                    modalSelectionDateInput.value = new Date().toISOString().split('T')[0];
+                    confirmModal.show();
+                } else {
+                    if (data.archived) {
+                        draggedCard.remove();
+                    } else {
+                        const newCardsContainer = newColumn.querySelector('.kanban-cards');
+                        newCardsContainer.appendChild(draggedCard);
+                    }
+                    updateCardCount(oldColumn);
+                    updateCardCount(newColumn);
+                }
+                console.log(data.message);
+            })
+            .catch(error => {
+                console.error('Erro de rede:', error);
+                location.reload();
+            });
+        }
+
+        cancelDateBtn.addEventListener('click', () => { location.reload(); });
+        modalCloseBtn.addEventListener('click', () => { location.reload(); });
+
+        confirmDateBtn.addEventListener('click', () => {
+            const sessionId = modalSessionIdInput.value;
+            const selectionDate = modalSelectionDateInput.value;
+
+            if (!selectionDate) {
+                alert('Por favor, selecione uma data.');
+                return;
+            }
+            
+            fetch(CONFIRM_DATE_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    selection_date: selectionDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    confirmModal.hide();
+                    location.reload();
+                } else {
+                    alert('Erro ao confirmar a data: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao confirmar data:', error);
+                alert('Ocorreu um erro de rede. Tente novamente.');
+            });
+        });
+    });
+</script>
+{% endblock %}

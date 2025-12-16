@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-between align-items-center mb-1">
+    <div class="col-md-10">
+        <h1>Gerenciador de Clientes</h1>
+    </div>
+    <div class="col-md-2 text-end">
+        <a href="{{ url_for('crm.add') }}" class="btn btn-primary">Adicionar Novo Cliente</a>
+    </div>
+</div>
+
+<div class="card p-3 my-3">
+    <form method="get" class="row g-3 align-items-end" id="filter-form">
+        <div class="col-md-4">
+            <label class="form-label small">{{ filter_form.search.label }}</label>
+            {{ filter_form.search(class="form-control auto-submit", placeholder="Buscar por nome...") }}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">{{ filter_form.lead_source.label }}</label>
+            {{ filter_form.lead_source(class="form-select auto-submit") }}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">{{ filter_form.tags.label }}</label>
+            {{ filter_form.tags(class="form-control auto-submit", placeholder="Buscar por tag...") }}
+        </div>
+        <div class="col-md-2">
+            <a href="{{ url_for('crm.index') }}" class="btn btn-outline-secondary w-100">Limpar Filtros</a>
+        </div>
+    </form>
+</div>
+
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>WhatsApp</th>
+            <th>Email</th>
+            <th>Origem</th>
+            <th>Tags</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <td><a href="{{ url_for('crm.client_details', client_name=client.name) }}">{{ client.name }}</a></td>
+            <td>{{ client.whatsapp or '-' }}</td>
+            <td>{{ client.email or '-' }}</td>
+            <td>
+                {% if client.lead_source %}
+                <span class="badge bg-secondary">{{ client.lead_source }}</span>
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td>
+                {% if client.tags %}
+                    {% for tag in client.tags.split(',') %}
+                        <span class="badge bg-info">{{ tag.strip() }}</span>
+                    {% endfor %}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td class="text-end">
+                <a href="{{ url_for('crm.client_details', client_name=client.name) }}" class="btn btn-info btn-sm">Ver Histórico</a>
+                <a href="{{ url_for('crm.edit', client_id=client.id) }}" class="btn btn-secondary btn-sm">Editar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" class="text-center">Nenhum cliente encontrado para os filtros selecionados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const filterForm = document.getElementById('filter-form');
+    let debounceTimer;
+
+    filterForm.addEventListener('input', (event) => {
+        if (event.target.type === 'text') {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filterForm.submit();
+            }, 400); // Debounce
+        }
+    });
+    
+    filterForm.addEventListener('change', (event) => {
+        if (event.target.tagName === 'SELECT') {
+            filterForm.submit();
+        }
+    });
+});
+</script>
+{% endblock %}
+--- FIM DO ARQUIVO: app/templates/clients.html ---

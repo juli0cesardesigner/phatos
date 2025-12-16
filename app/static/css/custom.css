@@ -1,0 +1,198 @@
+.form-control::placeholder { color: #88929a !important; opacity: 1; }
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+.form-switch .form-check-input { background-color: #555; border-color: #777; }
+.form-switch .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
+.btn { margin-right: 5px; }
+
+/* --- ESTILIZAÇÃO RESTAURADA DOS ÍCONES DE PAGAMENTO --- */
+.payment-icon-label {
+    cursor: pointer;
+    padding-top: 0.5rem;
+    font-size: 1.5rem; /* Aumenta o tamanho do ícone */
+}
+
+/* Esconde o ícone oposto por padrão */
+input[type="checkbox"]:checked ~ .payment-icon-label .icon-unpaid-color {
+    display: none;
+}
+input[type="checkbox"]:not(:checked) ~ .payment-icon-label .icon-paid-color {
+    display: none;
+}
+
+/* Colore os ícones */
+.icon-paid-color {
+    color: #198754; /* Verde sucesso */
+}
+.icon-unpaid-color {
+    color: #dc3545; /* Vermelho perigo */
+}
+/* --- FIM DA ESTILIZAÇÃO RESTAURADA --- */
+
+/* --- Estilos Kanban --- */
+
+.kanban-full-width {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-top: 0 !important;
+}
+
+.kanban-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem;
+    height: calc(100vh - 56px);
+    align-items: flex-start;
+    cursor: grab;
+}
+
+.kanban-column {
+    min-width: 300px;
+    max-width: 300px;
+    background-color: #2a3035;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.kanban-header {
+    font-weight: bold;
+    padding: 0.5rem 0.25rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid #444;
+    color: #fff;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.kanban-cards {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0.25rem;
+    min-height: 50px;
+}
+
+.kanban-archive-column {
+    background-color: transparent;
+    border: 2px dashed #dc3545;
+}
+
+.kanban-archive-column .kanban-header {
+    color: #dc3545;
+    border-bottom: none;
+}
+
+.kanban-archive-column .kanban-cards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    color: #6c757d;
+}
+
+.kanban-archive-column .kanban-cards::after {
+    content: "Arraste um card aqui para arquivar";
+    font-style: italic;
+    text-align: center;
+}
+
+.kanban-archive-column.drag-over {
+    background-color: rgba(220, 53, 69, 0.15);
+}
+
+.kanban-card {
+    position: relative;
+    display: flex;
+    background-color: #363d44;
+    border: 1px solid #444;
+    border-left: 5px solid #0d6efd; /* Cor padrão */
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.3rem;
+    cursor: grab;
+    transition: background-color 0.3s, filter 0.2s, border-left-color 0.3s;
+}
+
+.kanban-card:hover {
+    filter: brightness(1.15);
+}
+
+/* --- NOVAS CLASSES DE PRAZO (BACKGROUND) --- */
+.kanban-card.deadline-ok { 
+    background-color: #284234;
+    border-left-color: #198754; 
+}
+.kanban-card.deadline-due { 
+    background-color: #544518;
+    border-left-color: #ffc107; 
+}
+.kanban-card.deadline-urgent { 
+    background-color: #5e3515;
+    border-left-color: #fd7e14; 
+}
+.kanban-card.deadline-overdue { 
+    background-color: #542227;
+    border-left-color: #dc3545; 
+}
+
+
+.kanban-card.dragging {
+    opacity: 0.5;
+    border: 1px dashed #0d6efd;
+}
+
+.kanban-card-content {
+    flex-grow: 1;
+}
+
+.kanban-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kanban-card-meta {
+    font-size: 0.85rem;
+    color: #adb5bd;
+}
+
+.printing-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    background-color: rgba(23, 162, 184, 0.8); /* Cor ciano/azul claro para destaque */
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+}
+
+.kanban-edit-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    padding: 4px;
+    color: #adb5bd;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.kanban-card:hover .kanban-edit-btn {
+    opacity: 1;
+}
+
+.kanban-card:not(.has-printing):hover .kanban-edit-btn {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+}

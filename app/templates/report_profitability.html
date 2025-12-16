@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Relatórios</h1>
+
+<ul class="nav nav-tabs mt-3">
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('reports.financial_performance') }}">Desempenho Financeiro</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('reports.lead_source_analysis') }}">Análise de Leads</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" aria-current="page" href="{{ url_for('reports.profitability_analysis') }}">Lucratividade por Serviço</a>
+    </li>
+</ul>
+
+<div class="card border-top-0 rounded-0 rounded-bottom">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end mb-4 border p-3 rounded" id="filter-form">
+            <div class="col-md-3">
+                {{ form.start_date.label(class="form-label") }}
+                {{ form.start_date(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+                {{ form.end_date.label(class="form-label") }}
+                {{ form.end_date(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('reports.profitability_analysis') }}" class="btn btn-outline-secondary w-100">Limpar Filtros</a>
+            </div>
+        </form>
+
+        <h5>Lucratividade por Tipo de Ensaio</h5>
+        <table class="table table-hover">
+            <thead><tr><th>Tipo de Ensaio</th><th class="text-center">Nº de Ensaios</th><th class="text-end">Faturamento Total</th><th class="text-end">Custos Totais</th><th class="text-end">Lucro</th></tr></thead>
+            <tbody>
+                {% for row in results %}
+                <tr>
+                    <td><strong>{{ row.session_type_name }}</strong></td>
+                    <td class="text-center">{{ row.session_count }}</td>
+                    <td class="text-end text-success">{{ (row.total_revenue or 0) | currency }}</td>
+                    <td class="text-end text-danger">{{ (row.total_cost or 0) | currency }}</td>
+                    <td class="text-end fw-bold {% if row.profit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ row.profit | currency }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center">Nenhum ensaio encontrado para o período selecionado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

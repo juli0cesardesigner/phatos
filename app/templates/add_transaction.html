@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Adicionar Transação</h1>
+        <form action="" method="post" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control") }}
+                {% for error in form.description.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.value.label(class="form-label") }}
+                    {{ form.value(class="form-control currency-input") }}
+                    {% for error in form.value.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.transaction_date.label(class="form-label", text="Data da 1ª Transação") }}
+                    {{ form.transaction_date(class="form-control") }}
+                    {% for error in form.transaction_date.errors %}<div class="alert alert-danger p-1 mt-1">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.transaction_type.label(class="form-label") }}
+                {{ form.transaction_type(class="form-select") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.tags.label(class="form-label") }}
+                {{ form.tags(class="form-control", placeholder="Ex: aluguel, luz, comida") }}
+            </div>
+
+            <!-- Bloco único do campo de Frequência que será movido -->
+            <div id="frequencyContainer" class="d-none">
+                <div class="mb-3">
+                    {{ form.recurrence_frequency.label(class="form-label") }}
+                    {{ form.recurrence_frequency(class="form-select") }}
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE RECORRÊNCIA CORRIGIDA -->
+            <hr class="my-4">
+            <div class="form-check form-switch mb-3">
+                {{ form.is_recurring(class="form-check-input", role="switch", id="isRecurringSwitch") }}
+                {{ form.is_recurring.label(class="form-check-label") }}
+            </div>
+
+            <div id="recurrenceOptions" class="d-none card p-3 mb-3">
+                <div class="mb-3">
+                    {{ form.recurrence_type.label(class="form-label") }}
+                    {{ form.recurrence_type(class="form-select", id="recurrenceTypeSelect") }}
+                </div>
+
+                <!-- Opções para PARCELADO -->
+                <div id="installmentOptions" class="d-none">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.recurrence_installments.label(class="form-label") }}
+                            {{ form.recurrence_installments(class="form-control", type="number", min="2", value="2") }}
+                        </div>
+                        <!-- Placeholder para o campo de frequência -->
+                        <div class="col-md-6" id="installmentFrequencyPlaceholder"></div>
+                    </div>
+                </div>
+
+                <!-- Opções para FIXA -->
+                <div id="fixedOptions" class="d-none">
+                     <!-- Placeholder para o campo de frequência -->
+                     <div id="fixedFrequencyPlaceholder"></div>
+                    <small class="form-text text-muted">Contas fixas serão criadas para os próximos 2 anos.</small>
+                </div>
+            </div>
+            <!-- FIM DA SEÇÃO DE RECORRÊNCIA -->
+
+            <div class="text-center mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('finance.index') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const isRecurringSwitch = document.getElementById('isRecurringSwitch');
+    const recurrenceOptions = document.getElementById('recurrenceOptions');
+    const recurrenceTypeSelect = document.getElementById('recurrenceTypeSelect');
+    
+    const installmentOptions = document.getElementById('installmentOptions');
+    const fixedOptions = document.getElementById('fixedOptions');
+    
+    // O campo de frequência e seu container
+    const frequencyContainer = document.getElementById('frequencyContainer');
+    
+    // Os locais onde o campo de frequência pode ser inserido
+    const installmentPlaceholder = document.getElementById('installmentFrequencyPlaceholder');
+    const fixedPlaceholder = document.getElementById('fixedFrequencyPlaceholder');
+
+    function toggleRecurrenceOptions() {
+        const isChecked = isRecurringSwitch.checked;
+        recurrenceOptions.classList.toggle('d-none', !isChecked);
+        
+        if (isChecked) {
+            toggleRecurrenceType();
+        } else {
+            // Se desativado, esconde tudo e move a frequência de volta para seu container original
+            installmentOptions.classList.add('d-none');
+            fixedOptions.classList.add('d-none');
+            frequencyContainer.appendChild(document.querySelector('[name="recurrence_frequency"]').parentElement);
+        }
+    }
+
+    function toggleRecurrenceType() {
+        const selectedType = recurrenceTypeSelect.value;
+        
+        installmentOptions.classList.add('d-none');
+        fixedOptions.classList.add('d-none');
+
+        if (selectedType === 'installment') {
+            installmentOptions.classList.remove('d-none');
+            // Move o campo de frequência para o placeholder de parcelas
+            installmentPlaceholder.appendChild(document.querySelector('[name="recurrence_frequency"]').parentElement);
+        } else if (selectedType === 'fixed') {
+            fixedOptions.classList.remove('d-none');
+            // Move o campo de frequência para o placeholder de fixas
+            fixedPlaceholder.appendChild(document.querySelector('[name="recurrence_frequency"]').parentElement);
+        }
+    }
+
+    isRecurringSwitch.addEventListener('change', toggleRecurrenceOptions);
+    recurrenceTypeSelect.addEventListener('change', toggleRecurrenceType);
+
+    // Inicializa o estado correto ao carregar a página
+    toggleRecurrenceOptions();
+});
+</script>
+{% endblock %}
