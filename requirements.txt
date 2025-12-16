@@ -20,7 +20,6 @@ mdurl==0.1.2
 ordered-set==4.1.0
 packaging==25.0
 Pygments==2.19.2
-psycopg2-binary # Added for PostgreSQL
 gunicorn # Added for production WSGI server
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
