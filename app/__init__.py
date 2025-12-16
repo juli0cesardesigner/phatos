@@ -36,8 +36,8 @@ app = Flask(__name__)
 
 # CONFIGURAÇÃO DE SEGURANÇA
 # Tenta pegar do sistema (.env), se não tiver, usa fallback (APENAS PARA DEV)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'fallback-inseguro-apenas-para-dev-troque-isso-em-prod'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configura Filtros Jinja
